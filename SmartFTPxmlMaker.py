@@ -27,7 +27,8 @@ def indent(elem, level=0):
 
 def addElem(root, filepath, gdpath, folder=''):
     # Extract file name.
-    content = os.path.split(filepath)[-1]
+    file   = os.path.split(filepath)[-1]
+    folder = folder + '/'
 
     # Create brunch tags.
     item   = Element('Item')
@@ -50,7 +51,7 @@ def addElem(root, filepath, gdpath, folder=''):
     item.append(dest)
     SubElement(dest, 'Type').text            = '2'
     SubElement(dest, 'FavoriteId').text      = favoriteID
-    SubElement(dest, 'Path').text            = gdpath + folder + content
+    SubElement(dest, 'Path').text            = gdpath + folder + file
 
     # Add item to root.
     root.append(item)
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     mygdfs     = r'G:\mydrive\...'
     mydrive    = '/mydrive/.../'
     teamdrive  = '/teamdrives/.../'
-    favoriteID = '{1A23B45C-9A91-2D3D-4577-A824F52C8EC4}'
+    favoriteID = '{1A23B45C-9A91-2D3D-4577-A824F416DC84}'
 
     # Create root.
     root = Element('Items')
@@ -92,7 +93,6 @@ if __name__ == '__main__':
                 shutil.move(filepath, existfile)
 
     indent(root)
-    #dump(root)
     print('File : {}\nItem : {}'.format(len(root.findall('Item')) // 2, len(root.findall('Item'))))
 
     # Save.
