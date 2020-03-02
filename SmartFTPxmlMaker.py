@@ -28,7 +28,6 @@ def indent(elem, level=0):
 def addElem(root, filepath, gdpath, folder=''):
     # Extract file name.
     file   = os.path.split(filepath)[-1]
-    folder = folder + '/'
 
     # Create brunch tags.
     item   = Element('Item')
@@ -79,9 +78,10 @@ if __name__ == '__main__':
 
     # Add tags.
     for file in os.listdir(basepath):
-        folder   = '' #file[file.find('[') + 1:file.find(']')]
+        folder   = (lambda x: x[x.find('[') + 1:x.find(']')] if x.count('[') > 0 else '')(file)
         filepath = os.path.join(basepath, file)
         mydest   = os.path.join(mygdfs, folder, file)
+        folder   = (lambda x: x + '/' if len(x) > 0 else x)(folder)
 
         # Skip folder.
         if os.path.isfile(filepath):
