@@ -1,0 +1,26 @@
+<Items>
+  <Item>
+    <Version>5</Version>
+    <Id>{55725C0C-C8DB-47FE-9F05-6469E367EDE6}</Id>
+    <Type>1</Type>
+    <Size>9387435785</Size>
+    <Operation>1</Operation>
+    <OperationScope>1</OperationScope>
+    <Synchronization>1</Synchronization>
+    <FileExistAction>1</FileExistAction>
+    <TransferType>2</TransferType>
+    <Source>
+      <Type>1</Type>
+      <Path>
+        C:\Users\user\Documents\GitHub\[Google]a.MP4
+      </Path>
+    </Source>
+    <Destination>
+      <Type>2</Type>
+      <FavoriteId>{1A23B45C-9A91-2D3D-4577-A824F416DC84}</FavoriteId>
+      <Path>
+        /mydrive/Test/Google/[Google]a.MP4
+      </Path>
+    </Destination>
+  </Item>
+</Items>
