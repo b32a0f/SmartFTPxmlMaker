@@ -1,5 +1,5 @@
 # SmartFTPxmlMaker
-Python script to SmartFTP Transfer Queue xml.
+Python script to make SmartFTP Transfer Queue xml.
 
 # Note
   - Using Drive File Stream to detect duplicated files on Google Drive. RaiDrive will works same.
