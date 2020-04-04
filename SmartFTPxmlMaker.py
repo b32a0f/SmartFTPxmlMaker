@@ -11,10 +11,10 @@ import uuid
 from xml.etree.ElementTree import Element, SubElement, ElementTree, dump
 
 def indent(elem, level=0):
-    i = "\n" + level * "  "
+    i = '\n' + level * '  '
     if len(elem):
         if not elem.text or not elem.text.strip():
-            elem.text = i + "  "
+            elem.text = i + '  '
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
         for elem in elem:
@@ -27,45 +27,55 @@ def indent(elem, level=0):
 
 def addElem(root, filepath, gdpath, folder=''):
     # Extract file name.
-    file   = os.path.split(filepath)[-1]
+    file = os.path.split(filepath)[-1]
 
     # Create brunch tags.
-    item   = Element('Item')
-    source = Element('Source')
-    dest   = Element('Destination')
+    item = Element('Item')
+    src  = Element('Source')
+    dest = Element('Destination')
 
     # Add subtags.
     SubElement(item, 'Version').text         = '5'
     SubElement(item, 'Id').text              = '{' + str(uuid.uuid4()).upper() + '}'
-    SubElement(item, 'Type').text            = '1'
-    SubElement(item, 'Size').text            = str(os.path.getsize(filepath))
-    SubElement(item, 'Operation').text       = '1'
-    SubElement(item, 'OperationScope').text  = '1'
-    SubElement(item, 'Synchronization').text = '1'
-    SubElement(item, 'FileExistAction').text = '1'
-    SubElement(item, 'TransferType').text    = '2'
-    item.append(source)
-    SubElement(source, 'Type').text          = '1'
-    SubElement(source, 'Path').text          = filepath
-    item.append(dest)
+    SubElement(item, 'Type').text            = '1' # 1: File 2: Folder Format not consider.
+    SubElement(item, 'Size').text            = str(os.path.getsize(filepath)) # If file must have. Value not consider.
+    SubElement(item, 'Operation').text       = '1' # No matter.
+    SubElement(item, 'OperationScope').text  = '1' # No matter.
+    SubElement(item, 'Synchronization').text = '1' # 1: Rule 2: OFF
+    SubElement(item, 'FileExistAction').text = '1' # 1: Replace 2: Rule
+    SubElement(item, 'TransferType').text    = '2' # No matter.
+    SubElement(src, 'Type').text             = '1' # 1: Local 2: Cloud
+    SubElement(src, 'Path').text             = filepath
     SubElement(dest, 'Type').text            = '2'
     SubElement(dest, 'FavoriteId').text      = favoriteID
-    SubElement(dest, 'Path').text            = gdpath + folder + file
+    SubElement(dest, 'Path').text            = gdpath + folder + file # No ExFld Freez. If file, Last / 'l be name either end with /.
 
-    # Add item to root.
+    # Modify tags for folder.
+    if os.path.isdir(filepath):
+        item.remove(item.find('Size'))
+        item.find('Type').text           = '2'
+        item.find('OperationScope').text = '2'
+
+    # Concatenate.
+    item.append(src)
+    item.append(dest)
     root.append(item)
 
 if __name__ == '__main__':
+    # ----------------------------------------------------------------
     # xmlpath    : Path to save xml.
     # basepath   : Uploading folder.
-    # movepath   : If exists file, to move. User must considers hands on these.
-    # mygdfs     : Drive File Stream path. Regarding to Backup to teamdrive.
-    # mydrive    : Path of destination for mydrive. NOT Recommeneded upload to root.
-    # teamdrive  : Path of destination for teamdrive. NOT Recommeneded upload to root.
-    # favoriteID : UUID of Google Drive Connection. It will be find out from Exported Queue xml.
-    xmlpath    = r'C:\Users\user\Documents\SmartFTP_Queue_{}.xml'.format(datetime.now() \
-                                                                                 .isoformat()[:19] \
-                                                                                 .replace(':', '：'))
+    # movepath   : Path to move for exist files.
+    # mygdfs     : Google Drive File Stream path. (Check exist files.)
+    # mydrive    : Destination path of mydrive.
+    # teamdrive  : Destination path of teamdrive. (Back Up.)
+    # favoriteID : UUID of SmartFTP connection.
+    # 
+    # <Way to find FavoriteID>
+    # 1) File > Settings > History > {}.Properties > General
+    # 2) File > Connection > Quick Connect > {}.Properties > General
+    # ----------------------------------------------------------------
+    xmlpath    = r'C:\Users\user\Documents\SmartFTP_Queue_{}.xml'.format(datetime.now().isoformat()[:19].replace(':', '：'))
     basepath   = r'H:\source'
     movepath   = r'H:\duplicated'
     mygdfs     = r'G:\mydrive\...'
@@ -76,24 +86,45 @@ if __name__ == '__main__':
     # Create root.
     root = Element('Items')
 
-    # Add tags.
+    # Processing.
     for file in os.listdir(basepath):
-        folder   = (lambda x: x[x.find('[') + 1:x.find(']')] if x.count('[') > 0 else '')(file)
+        word   = file[file.find('[') + 1:file.find(']')].split(' ')[0]
+        bucket = ''
+        folder = ''
+
+        # Combine gdfs folders.
+        for circle in os.listdir(mygdfs):
+            bucket += circle + '|'
+
+        # Search target folder.
+        if word in bucket:
+            start  = bucket.find(word)
+            end    = bucket.find('|', start)
+            folder = bucket[start:end]
+
+        # Modify paths.
         filepath = os.path.join(basepath, file)
-        mydest   = os.path.join(mygdfs, folder, file)
-        folder   = (lambda x: x + '/' if len(x) > 0 else x)(folder)
+        gdfsdest = os.path.join(mygdfs, folder, file)
+        folder   = (lambda x: x + '/' if len(x) else x)(folder)
 
-        # Skip folder.
-        if os.path.isfile(filepath):
-            if not os.path.exists(mydest):
-                addElem(root, filepath, mydrive, folder)
-                addElem(root, filepath, teamdrive, folder)
-            else:
-                existfile = os.path.join(movepath, file)
-                shutil.move(filepath, existfile)
+        # Add tags.
+        if not os.path.exists(gdfsdest):
+            addElem(root, filepath, mydrive, folder)
+            addElem(root, filepath, teamdrive, folder)
+        else:
+            existfile = os.path.join(movepath, file)
+            shutil.move(filepath, existfile)
 
+    # Align xml.
     indent(root)
-    print('File : {}\nItem : {}'.format(len(root.findall('Item')) // 2, len(root.findall('Item'))))
+
+    # Report.
+    itemcnt = len(root.findall('Item'))
+    filecnt = len(os.listdir(basepath))
+    movecnt = len(os.listdir(movepath))
+    print('Item :', itemcnt)
+    print('File :', filecnt)
+    print('Move :', movecnt)
 
     # Save.
     ElementTree(root).write(xmlpath, encoding='utf-8')
