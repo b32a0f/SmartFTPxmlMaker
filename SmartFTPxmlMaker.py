@@ -37,18 +37,18 @@ def addElem(root, filepath, gdpath, folder=''):
     # Add subtags.
     SubElement(item, 'Version').text         = '5'
     SubElement(item, 'Id').text              = '{' + str(uuid.uuid4()).upper() + '}'
-    SubElement(item, 'Type').text            = '1' # 1: File 2: Folder Format not consider.
-    SubElement(item, 'Size').text            = str(os.path.getsize(filepath)) # If file must have. Value not consider.
-    SubElement(item, 'Operation').text       = '1' # No matter.
-    SubElement(item, 'OperationScope').text  = '1' # No matter.
-    SubElement(item, 'Synchronization').text = '1' # 1: Rule 2: OFF
-    SubElement(item, 'FileExistAction').text = '1' # 1: Replace 2: Rule
-    SubElement(item, 'TransferType').text    = '2' # No matter.
-    SubElement(src, 'Type').text             = '1' # 1: Local 2: Cloud
+    SubElement(item, 'Type').text            = '1'
+    SubElement(item, 'Size').text            = str(os.path.getsize(filepath))
+    SubElement(item, 'Operation').text       = '1'
+    SubElement(item, 'OperationScope').text  = '1'
+    SubElement(item, 'Synchronization').text = '1'
+    SubElement(item, 'FileExistAction').text = '1'
+    SubElement(item, 'TransferType').text    = '2'
+    SubElement(src, 'Type').text             = '1'
     SubElement(src, 'Path').text             = filepath
     SubElement(dest, 'Type').text            = '2'
     SubElement(dest, 'FavoriteId').text      = favoriteID
-    SubElement(dest, 'Path').text            = gdpath + folder + file # No ExFld Freez. If file, Last / 'l be name either end with /.
+    SubElement(dest, 'Path').text            = gdpath + folder + file
 
     # Modify tags for folder.
     if os.path.isdir(filepath):
